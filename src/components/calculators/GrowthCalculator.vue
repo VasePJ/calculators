@@ -3,24 +3,13 @@
     <h1 class="mb-4 md:text-5xl text-2xl">Growth Calculator</h1>
   </div> 
   <div class="flex flex-col">
-    <div class="mx-auto my-4">
-      <span class=" text-xl text-bold">Planning for Growth Calculator</span>
+    <div v-for="field in fields" :key="field.name">
+      <h2 v-if="field.title" class=" mt-8 text-xl text-bold">{{field.title}}</h2>
+      <InputField v-model.number="field.value" @value-changed="calculate" 
+        v-bind:label="field.label" class="my-2" v-bind:placeholder="field.placeholder" v-bind:readonly="field.readonly"></InputField>
     </div>
-    <InputField v-model="newDoors" @value-changed="calculate" label="How Many News Doors Do You Want to Add This Year" class="my-2" placeholder="Enter value"></InputField>
-    <InputField v-model="averageLostdoors" @value-changed="calculate" label="How Many Doors Do You Lose on Average?" class="my-2" placeholder="Enter value"></InputField>
-    <InputField v-model="aquirenewDoors" @value-changed="calculate" label="How Many Doors You Need to Acquire This Year" class="my-2" readonly="true"></InputField>
-    <div class="mx-auto my-4">
-      <span class=" text-xl text-bold">How Many Clients You Need to Add</span>
-    </div>
-    <InputField v-model="averageDoors" @value-changed="calculate" label="How Many Doors Does Your Average Client Have?" class="my-2" placeholder="Enter value"></InputField>
-    <InputField v-model="newClientsNeeded" @value-changed="calculate" label="How Many Clients You Need to Add" class="my-2" readonly="true"></InputField>
-    <div class="mx-auto my-4">
-      <span class=" text-xl text-bold">How Many Leads You Need</span>
-    </div>
-    <InputField v-model="newClientsNeeded" @value-changed="calculate" label="Number of Clients Need to Add" class="my-2" readonly="true"></InputField>
-    <InputField v-model="avrClosingRate" @value-changed="calculate" label="What Is Your Average Closing Rate" class="my-2" placeholder="Enter %"></InputField>
-    <InputField v-model="neededLeeds" @value-changed="calculate" label="How Many Leads You Need to Generate" class="my-2" readonly="true"></InputField>
   </div> 
+
 </template>
 
 <script>
@@ -30,15 +19,59 @@ export default {
   name: 'GrowthCalculator',
   data() {
     return {
-      newDoors:'',
-      averageLostdoors: '',
-      aquirenewDoors: '',
-      averageDoors: '',
-      newClientsNeeded: '',
-      newClientsToAdd: '',
-      avrClosingRate: '',
-      neededLeeds: '',
-    
+        fields: [
+          {
+            name: 'newDoors',
+            label: 'How Many News Doors Do You Want to Add This Year',
+            value: '',
+            placeholder: 'Enter value',
+            title: 'Planning for Growth Calculator'
+          },
+          {
+            name: 'averageLostdoors',
+            label: 'How Many Doors Do You Lose on Average?',
+            value: '',
+            placeholder: 'Enter value',
+          },
+          {
+            name: 'aquirenewDoors',
+            label: 'How Many Doors You Need to Acquire This Year',
+            value: '',
+            readonly: true
+          },
+          {
+            name: 'averageDoors',
+            label: 'How Many Doors Does Your Average Client Have?',
+            value: '',
+            placeholder: 'Enter value',
+            title: 'How Many Clients You Need to Add'
+          },
+          {
+            name: 'newClientsNeeded',
+            label: 'How Many Clients You Need to Add',
+            value: '',
+            readonly: true
+          },
+          {
+            name: 'newClientsToAdd',
+            label: 'Number of Clients Need to Add',
+            value: '',
+            title: 'How Many Leads You Need',
+            readonly: true
+          },
+          {
+            name: 'avrClosingRate',
+            label: 'What Is Your Average Closing Rate',
+            value: '',
+            placeholder: 'Enter %',
+          },
+          {
+            name: 'neededLeeds',
+            label: 'How Many Leads You Need to Generate',
+            value: '',
+            readonly: true
+          },
+        ],
     };
     },
   components: {
@@ -46,31 +79,43 @@ export default {
   },
   methods:{
     doors(){
-      if (isNaN(parseFloat(this.newDoors)) ||
-          isNaN(parseFloat(this.averageLostdoors)))
-            {
-            this.aquirenewDoors = '';
-            return;
+      const newDoors = this.fields.find(field => field.name == 'newDoors').value;
+      const averageLostdoors = this.fields.find(field => field.name == 'averageLostdoors').value;
+      const aquirenewDoorsObj = this.fields.find(field => field.name == 'aquirenewDoors');
+
+      if (!newDoors || !averageLostdoors)
+        {
+          aquirenewDoorsObj.value = '';
+          return;
         }
-      this.aquirenewDoors = parseFloat(parseFloat(this.newDoors) + parseFloat(this.averageLostdoors)).toFixed(2);
+      aquirenewDoorsObj.value = parseFloat(newDoors + averageLostdoors).toFixed(2);
     },
     clients(){
-      if (isNaN(parseFloat(this.averageDoors)) ||
-        isNaN(parseFloat(this.aquirenewDoors)))
-          {
-          this.newClientsNeeded = '';
+       const averageDoors = this.fields.find(field => field.name == 'averageDoors').value;
+       const aquirenewDoors = this.fields.find(field => field.name == 'aquirenewDoors').value;
+       const newClientsNeededObj = this.fields.find(field => field.name == 'newClientsNeeded');
+       const newClientsToAddObj = this.fields.find(field => field.name == 'newClientsToAdd');
+
+      if (!averageDoors || !aquirenewDoors)
+        {
+          newClientsNeededObj.value = '';
+          newClientsToAddObj.value = '';
           return;
-      }
-    this.newClientsNeeded = parseFloat(parseFloat(this.aquirenewDoors) / parseFloat(this.averageDoors)).toFixed(2);
+        }
+      newClientsNeededObj.value = parseFloat(aquirenewDoors / averageDoors).toFixed(2);
+      newClientsToAddObj.value = newClientsNeededObj.value;
     },
     leeds(){
-      if (isNaN(parseFloat(this.newClientsNeeded)) ||
-          isNaN(parseFloat(this.avrClosingRate)))
-           {
-            this.neededLeeds = '';
-            return;
+        const newClientsNeeded = this.fields.find(field => field.name == 'newClientsNeeded').value;
+        const avrClosingRate = this.fields.find(field => field.name == 'avrClosingRate').value;
+        const neededLeedsObj = this.fields.find(field => field.name == 'neededLeeds');
+
+      if (!newClientsNeeded || !avrClosingRate)
+        {
+          neededLeedsObj.value = '';
+          return;
         }
-      this.neededLeeds = parseFloat((parseFloat(this.newClientsNeeded) / parseFloat(this.avrClosingRate)) * 100).toFixed(2);
+      neededLeedsObj.value = parseFloat((newClientsNeeded / avrClosingRate) * 100).toFixed(2);
 
     },
     calculate() {

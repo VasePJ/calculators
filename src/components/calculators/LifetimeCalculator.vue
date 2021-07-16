@@ -6,25 +6,14 @@
         <div class="mx-auto">
             <img src="../../assets/Top.svg" class="w-5 ml-36">
         </div>
-        <InputField v-model="mgmFee" @value-changed="calculate" label="Average Annual Management Fee"></InputField>
-        <div class="mx-auto">
-          <img src="../../assets/Seperator.svg" class=" ml-36">
-        </div>
-        <InputField v-model="annualFee" @value-changed="calculate" label="Other Annual Fees"></InputField>
-        <div class="mx-auto">
-          <img src="../../assets/Seperator.svg" class=" ml-36" >
-       </div>
-        <InputField v-model="yearsManaged" @value-changed="calculate" label="Average # of Years Managed"></InputField>
-        <div class="mx-auto">
-          <img src="../../assets/Seperator.svg" class=" ml-36">
-        </div>
-        <InputField v-model="leasingFee" @value-changed="calculate" label="Average Leasing Fee"></InputField>
-        <div class="mx-auto">
-          <img src="../../assets/Seperator.svg" class=" ml-36">
-        </div>
-        <InputField v-model="tenantTurnover" @value-changed="calculate" label="Average Tenant Turnover"></InputField>
-        <div class="mx-auto">
-          <img src="../../assets/Bottom.svg" class=" ml-36">
+        <div v-for="(field, index) in fields" :key="field.name" class="mx-auto w-full">
+          <InputField v-model.number="field.value" @value-changed="calculate" v-bind:label="field.label" v-bind:showCurrency="field.showCurrency"></InputField>
+          <div class="flex justify-center">
+            <img v-if="index != fields.length - 1 && Boolean(field.value)" src="../../assets/Seperator.svg" class="ml-36">
+            <img v-if="index == fields.length - 1 && Boolean(field.value)" src="../../assets/Bottom.svg" class="ml-36">
+            <img v-if="index != fields.length - 1 && !Boolean(field.value)" src="../../assets/Seperator-gray.svg" class="ml-36">
+            <img v-if="index == fields.length - 1 && !Boolean(field.value)" src="../../assets/Bottom-gray.svg" class="ml-36">
+          </div>
         </div>
     </div> 
     <div>
@@ -42,11 +31,38 @@ export default {
   name: 'LifetimeCalculator',
   data() {
       return {
-        mgmFee: '',
-        annualFee: '',
-        yearsManaged: '',
-        leasingFee: '',
-        tenantTurnover: '',
+    
+        fields: [
+          {
+            name: 'mgmFee',
+            label: 'Average Annual Management Fee',
+            value: '',
+            showCurrency: true
+          },
+          {
+            name: 'annualFee',
+            label: 'Other Annual Fees',
+            value: '',
+            showCurrency: true
+
+          },
+          {
+            name: 'yearsManaged',
+            label: 'Average # of Years Managed',
+            value: ''
+          },
+          {
+            name: 'leasingFee',
+            label: 'Average Leasing Fee',
+            value: '',
+            showCurrency: true
+          },
+          {
+            name: 'tenantTurnover',
+            label: 'Average Tenant Turnover',
+            value: ''
+          }
+        ],
         lifetimeValue: '$',
         validation:''
       
@@ -57,20 +73,22 @@ export default {
   },
   methods:{
     calculate(){
-      if (isNaN(parseFloat(this.mgmFee)) ||
-          isNaN(parseFloat(this.annualFee)) ||
-          isNaN(parseFloat(this.yearsManaged)) ||
-          isNaN(parseFloat(this.leasingFee)) ||
-          isNaN(parseFloat(this.tenantTurnover)) ) {
-            this.validation = 'Please fill all input fields.'
+      for(let field of this.fields){
+        if(!field.value){
+          this.validation = 'Please fill all input fields.'
             this.lifetimeValue = '$';
-            return;
+             return;
+        }
       }
-      this.lifetimeValue = (parseFloat(this.mgmFee) + parseFloat(this.annualFee))* 
-        parseFloat(this.yearsManaged) + 
-        ( parseFloat(this.leasingFee) * parseFloat(this.tenantTurnover));
+      const mgmFee = this.fields.find(field => field.name == 'mgmFee').value;
+      const annualFee = this.fields.find(field => field.name == 'annualFee').value;
+      const yearsManaged = this.fields.find(field => field.name == 'yearsManaged').value;
+      const leasingFee = this.fields.find(field => field.name == 'leasingFee').value;
+      const tenantTurnover = this.fields.find(field => field.name == 'tenantTurnover').value;
+
+      this.lifetimeValue = (mgmFee + annualFee) * yearsManaged + (leasingFee * tenantTurnover);
       this.lifetimeValue = '$ ' + this.lifetimeValue;
-        this.validation = '';
+      this.validation = '';
     }
   },
 }
